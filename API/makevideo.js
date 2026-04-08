@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   try {
     const imagePaths = [];
 
-    // save frames
+    // Save frames
     for (let i = 0; i < images.length; i++) {
       const base64 = images[i].replace(/^data:image\/\w+;base64,/, "");
       const filePath = path.join(tempDir, `frame_${String(i).padStart(3, "0")}.jpg`);
@@ -36,18 +36,9 @@ export default async function handler(req, res) {
       imagePaths.push(filePath);
     }
 
-    // create input list for ffmpeg
-    const listFile = path.join(tempDir, "input.txt");
-    let listContent = "";
-    imagePaths.forEach(() => {
-      listContent += `file '%d.jpg'\n`;
-      listContent += `duration ${duration}\n`;
-    });
-    // but ffmpeg concat with pattern is easier: use -framerate
-    // so we don't actually need input.txt; we’ll just use pattern
-
     const outputVideo = path.join(tempDir, "output.mp4");
 
+    // Run ffmpeg
     await new Promise((resolve, reject) => {
       execFile(
         ffmpeg,
@@ -73,19 +64,13 @@ export default async function handler(req, res) {
     });
 
     const videoBuffer = fs.readFileSync(outputVideo);
+
     res.setHeader("Content-Type", "video/mp4");
     res.setHeader("Content-Disposition", "attachment; filename=\"nexus-video.mp4\"");
     res.send(videoBuffer);
+
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Video generation failed" });
-  } finally {
-    try {
-      const files = fs.readdirSync(tempDir);
-      for (const f of files) {
-        fs.unlinkSync(path.join(tempDir, f));
-      }
-      fs.rmdirSync(tempDir);
-    } catch (_) {}
   }
 }
