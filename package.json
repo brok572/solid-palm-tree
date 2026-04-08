@@ -1,0 +1,11 @@
+{
+  "name": "nexus-video-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.1.0"
+  }
+}
